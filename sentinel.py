@@ -46,11 +46,13 @@ options:
     --detectionthreshold=INT        detection threshold        [default: 2]
     --recordonmotiondetection=BOOL  record on motion detection [default: true]
     --displaywindows=BOOL           display windows            [default: true]
+    --speak=BOOL                    speak on motion detection  [default: true]
+    --alarm=BOOL                    alarm on motion detection  [default: true]
     --email=ADDRESS                 e-mail address for alerts  [default: none]
 """
 
 name    = "sentinel"
-version = "2017-01-11T1547Z"
+version = "2017-01-12T2306Z"
 logo    = None
 
 import datetime
@@ -67,6 +69,7 @@ import time
 import cv2.cv as cv
 import propyte
 import shijian
+import tonescale
 
 def main(options):
 
@@ -87,6 +90,8 @@ def main(options):
     record_on_motion_detection =\
         options["--recordonmotiondetection"].lower() == "true"
     display_windows            = options["--displaywindows"].lower() == "true"
+    speak                      = options["--speak"].lower() == "true"
+    alarm                      = options["--alarm"].lower() == "true"
     email                      =\
         None if options["--email"].lower() == "none" else options["--email"]
 
@@ -111,6 +116,8 @@ def main(options):
         FPS                        = FPS,
         record_on_motion_detection = True,
         display_windows            = display_windows,
+        speak                      = speak,
+        alarm                      = alarm,
         email                      = email
     )
     detect.run()
@@ -136,6 +143,8 @@ class motion_detector():
         FPS                        = 30,
         record_on_motion_detection = True,
         display_windows            = True,
+        speak                      = True,
+        alarm                      = True,
         email                      = None
         ):
 
@@ -145,6 +154,8 @@ class motion_detector():
         self.FPS                        = FPS
         self.record_on_motion_detection = record_on_motion_detection
         self.display_windows            = display_windows
+        self.speak                      = speak
+        self.alarm                      = alarm
         self.email                      = email
         self.video_saver                = None
         self.font                       = None
@@ -227,7 +238,8 @@ class motion_detector():
             self.process_image(frame_current)
 
             if not self.recording:
-                # If motion is detected, send an alert and start recording.
+                # If motion is detected, depending on configuration, send an
+                # alert, start recording and speak an alert.
                 if self.movement():
                     self.trigger_time = timestamp
                     if timestamp > time_start + self.delay_launch:
@@ -239,12 +251,21 @@ class motion_detector():
                             )
                         )
                         if self.email is not None:
-                            #self.alert()
                             thread_alert = threading.Thread(
                                 target = self.alert
                             )
                             thread_alert.daemon = True
                             thread_alert.start()
+                        if self.speak:
+                            propyte.say(
+                                text = "motion detected"
+                            )
+                        if self.alarm:
+                            thread_play_alarm = threading.Thread(
+                                target = self.play_alarm
+                            )
+                            thread_play_alarm.daemon = True
+                            thread_play_alarm.start()
                         if self.record_on_motion_detection:
                             log.info("start recording")
                             self.recording = True
@@ -416,6 +437,15 @@ class motion_detector():
         except smtplib.SMTPException:
            print("e-mail send error")
         time.sleep(5)
+
+    def play_alarm(
+        self
+        ):
+        sound = tonescale.access_sound(
+            name = "DynamicLoad_BSPNostromo_Ripley.023"
+        )
+        sound.repeat(number = 5)
+        sound.play(background = True)
 
 if __name__ == "__main__":
     options = docopt.docopt(__doc__)
