@@ -9,9 +9,9 @@ def main():
 
     setuptools.setup(
         name             = "python_sentinel",
-        version          = "2017.01.12.2329",
+        version          = "2017.01.13.1732",
         description      = "motion detection and alerts",
-        long_description = pypandoc.convert("README.md", "rst"),
+        long_description = long_description(),
         url              = "https://github.com/wdbm/sentinel",
         author           = "Will Breaden Madden",
         author_email     = "wbm@protonmail.ch",
@@ -35,9 +35,19 @@ def main():
         """
     )
 
-def read(*paths):
-    with open(os.path.join(*paths), "r") as filename:
-        return filename.read()
+def long_description(
+    filename = "README.md"
+    ):
+
+    try:
+        try:
+            import pypandoc
+            long_description = pypandoc.convert(filename, "rst")
+        except ImportError:
+            long_description = open(filename).read()
+    except Exception:
+        long_description = ""
+    return long_description
 
 if __name__ == "__main__":
     main()

@@ -52,7 +52,7 @@ options:
 """
 
 name    = "sentinel"
-version = "2017-01-12T2329Z"
+version = "2017-01-13T1732Z"
 logo    = None
 
 import datetime
