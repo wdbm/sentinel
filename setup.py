@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 
 import os
-import pypandoc
+
 import setuptools
 
 def main():
 
     setuptools.setup(
         name             = "python_sentinel",
-        version          = "2017.01.13.1732",
+        version          = "2017.01.16.1549",
         description      = "motion detection and alerts",
         long_description = long_description(),
         url              = "https://github.com/wdbm/sentinel",
@@ -39,13 +39,13 @@ def long_description(
     filename = "README.md"
     ):
 
-    try:
+    if os.path.isfile(os.path.expandvars(filename)):
         try:
             import pypandoc
-            long_description = pypandoc.convert(filename, "rst")
+            long_description = pypandoc.convert_file(filename, "rst")
         except ImportError:
             long_description = open(filename).read()
-    except Exception:
+    else:
         long_description = ""
     return long_description
 
