@@ -13,6 +13,8 @@
 # motion, that records motion video and attempts to communicate alerts if an   #
 # e-mail address is specified.                                                 #
 #                                                                              #
+# copyright (C) 2017 Will Breaden Madden, wbm@protonmail.ch                    #
+#                                                                              #
 # This software is released under the terms of the GNU General Public License  #
 # version 3 (GPLv3).                                                           #
 #                                                                              #
@@ -52,7 +54,7 @@ options:
 """
 
 name    = "sentinel"
-version = "2017-01-16T1549Z"
+version = "2017-02-20T1858Z"
 logo    = None
 
 import datetime
