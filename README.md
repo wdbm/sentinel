@@ -15,6 +15,8 @@ sudo pip install python_sentinel
 
 Install OpenCV 2.4.9.1.
 
+Install and set up [propyte](https://github.com/wdbm/propyte) and its dependencies (such as those related to Telegram).
+
 # usage
 
 ```Bash
