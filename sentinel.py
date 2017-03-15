@@ -10,8 +10,8 @@
 # LICENCE INFORMATION                                                          #
 #                                                                              #
 # This program is a security monitoring program that uses video to detect      #
-# motion, that records motion video and attempts to communicate alerts if an   #
-# e-mail address is specified.                                                 #
+# motion, that records motion video, can express speech alerts, can express    #
+# alarms and attempts to communicate alerts as configured.                     #
 #                                                                              #
 # copyright (C) 2017 Will Breaden Madden, wbm@protonmail.ch                    #
 #                                                                              #
@@ -42,20 +42,22 @@ options:
     -v, --verbose                   verbose logging
     -s, --silent                    silent
     -u, --username=USERNAME         username
-    --launchdelay=INT               delay (s) before run       [default: 5]
-    --recordduration=INT            record time (s)            [default: 20]
-    --fps=INT                       camera frames per second   [default: 30]
-    --detectionthreshold=INT        detection threshold        [default: 2]
-    --recordonmotiondetection=BOOL  record on motion detection [default: true]
-    --displaywindows=BOOL           display windows            [default: true]
-    --speak=BOOL                    speak on motion detection  [default: true]
-    --alarm=BOOL                    alarm on motion detection  [default: true]
-    --email=ADDRESS                 e-mail address for alerts  [default: none]
-"""
 
-name    = "sentinel"
-version = "2017-02-20T1858Z"
-logo    = None
+    --fps=INT                       camera frames per second    [default: 30]
+    --detectionthreshold=INT        detection threshold         [default: 4]
+    --recordonmotiondetection=BOOL  record on motion detection  [default: true]
+    --displaywindows=BOOL           display windows             [default: true]
+
+    --speak=BOOL                    speak on motion detection   [default: true]
+    --alarm=BOOL                    alarm on motion detection   [default: true]
+    --email=ADDRESS                 e-mail address for alerts   [default: none]
+    --telegram=BOOL                 use Telegram messaging      [default: true]
+    --recipientstelegram=TEXT       comma-separated recipients  [default: none]
+
+    --launchdelay=INT               delay (s) before run        [default: 5]
+    --recordduration=INT            record time (s)             [default: 20]
+    --dayruntime=TEXT               HHMM--HHMM                  [default: none]
+"""
 
 import datetime
 import docopt
@@ -63,15 +65,22 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import logging
 import os
+import signal
 import smtplib
 import sys
 import threading
 import time
+import uuid
 
 import cv2.cv as cv
 import propyte
 import shijian
 import tonescale
+
+name     = "sentinel"
+version  = "2017-03-15T2320Z"
+logo     = None
+instance = str(uuid.uuid4())
 
 def main(options):
 
@@ -85,31 +94,54 @@ def main(options):
     global log
     from propyte import log
 
-    delay_launch               = int(options["--launchdelay"])
-    duration_record            = int(options["--recordduration"])
-    FPS                        = int(options["--fps"])
-    detection_threshold        = int(options["--detectionthreshold"])
-    record_on_motion_detection =\
-        options["--recordonmotiondetection"].lower() == "true"
-    display_windows            = options["--displaywindows"].lower() == "true"
-    speak                      = options["--speak"].lower() == "true"
-    alarm                      = options["--alarm"].lower() == "true"
-    email                      =\
-        None if options["--email"].lower() == "none" else options["--email"]
+    FPS                         = int(options["--fps"])
+    detection_threshold         = int(options["--detectionthreshold"])
+    record_on_motion_detection  = options["--recordonmotiondetection"].lower()\
+                                  == "true"
+    display_windows             = options["--displaywindows"].lower() == "true"
 
-    log.info(
-        "\nlaunch in {time} s\n\nPress Escape to exit.\n".format(
-            time = delay_launch
-        )
-    )
+    speak                       = options["--speak"].lower() == "true"
+    alarm                       = options["--alarm"].lower() == "true"
+    email                       = None if options["--email"].lower() == "none"\
+                                  else options["--email"]
+    program.use_Telegram        = options["--telegram"].lower() == "true"
+    program.recipients_Telegram = options["--recipientstelegram"].split(",")
+
+    delay_launch                = int(options["--launchdelay"])
+    duration_record             = int(options["--recordduration"])
+    day_run_time                = None if options["--dayruntime"].lower() ==\
+                                  "none" else options["--dayruntime"]
+
     if email is not None:
         log.info(
-            "alerts address: {email}\n".format(
+            "\nalerts address: {email}".format(
                 email = email
             )
         )
     else:
-        log.info("alerts not to be sent (no e-mail specified)\n")
+        log.info("\nalerts not to be sent (no e-mail specified)")
+
+    if program.use_Telegram and program.recipients_Telegram[0] == "none":
+        log.error("error: no Telegram recipients specified")
+        program.terminate()
+
+    if program.use_Telegram:
+        propyte.start_messaging_Telegram()
+
+    if program.use_Telegram:
+        propyte.send_message_Telegram(
+            recipients = program.recipients_Telegram,
+            text       = "{name} monitoring and alerting started".format(
+                             name = name
+                         )
+        )
+
+    log.info(
+        "\nlaunch motion detection in {time} s\n\n"\
+        "Press Escape to exit.\n".format(
+            time = delay_launch
+        )
+    )
 
     detect = motion_detector(
         delay_launch               = delay_launch,
@@ -120,7 +152,8 @@ def main(options):
         display_windows            = display_windows,
         speak                      = speak,
         alarm                      = alarm,
-        email                      = email
+        email                      = email,
+        day_run_time               = day_run_time
     )
     detect.run()
 
@@ -147,7 +180,8 @@ class motion_detector():
         display_windows            = True,
         speak                      = True,
         alarm                      = True,
-        email                      = None
+        email                      = None,
+        day_run_time               = None
         ):
 
         self.delay_launch               = delay_launch
@@ -159,6 +193,7 @@ class motion_detector():
         self.speak                      = speak
         self.alarm                      = alarm
         self.email                      = email
+        self.day_run_time               = day_run_time
         self.video_saver                = None
         self.font                       = None
         self.frame                      = None
@@ -230,21 +265,27 @@ class motion_detector():
         self
         ):
 
-        time_start = time.time()
+        time_start = datetime.datetime.utcnow()
 
-        while True:
+        while shijian.in_daily_time_range(time_range = self.day_run_time) in\
+            [True, None]:
 
             frame_current = cv.QueryFrame(self.capture)
-            timestamp = time.time()
+            time_current  = datetime.datetime.utcnow()
 
             self.process_image(frame_current)
 
-            if not self.recording:
-                # If motion is detected, depending on configuration, send an
-                # alert, start recording and speak an alert.
+            if\
+                not self.recording and\
+                self.day_run_time is None or\
+                shijian.in_daily_time_range(time_range = self.day_run_time):
+                # If motion is detected, depending on configuration,
+                # send an alert, start recording and speak an alert.
                 if self.movement():
-                    self.trigger_time = timestamp
-                    if timestamp > time_start + self.delay_launch:
+                    self.trigger_time = time_current
+                    if time_current >\
+                       time_start +\
+                       datetime.timedelta(seconds = self.delay_launch):
                         log.info(
                             "{timestamp} motion detected".format(
                                 timestamp = shijian.time_UTC(
@@ -258,6 +299,11 @@ class motion_detector():
                             )
                             thread_alert.daemon = True
                             thread_alert.start()
+                        if program.use_Telegram:
+                            propyte.send_message_Telegram(
+                                recipients = program.recipients_Telegram,
+                                text       = "motion detected"
+                            )
                         if self.speak:
                             propyte.say(
                                 text = "motion detected"
@@ -281,8 +327,10 @@ class motion_detector():
                     cv.CV_FILLED           # line connectivity
                 )
             else:
-                if timestamp >= self.trigger_time + self.duration_record:
-                    log.info("stop recording")
+                if time_current >=\
+                    self.trigger_time +\
+                    datetime.timedelta(seconds = self.duration_record):
+                    log.info("stop recording, watch for motion")
                     self.recording = False
                 else:
                     cv.PutText(
@@ -448,6 +496,11 @@ class motion_detector():
         )
         sound.repeat(number = 5)
         sound.play(background = True)
+
+def signal_handler(signal, frame):
+    program.terminate()
+
+signal.signal(signal.SIGINT, signal_handler)
 
 if __name__ == "__main__":
     options = docopt.docopt(__doc__)

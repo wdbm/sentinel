@@ -9,7 +9,7 @@ def main():
 
     setuptools.setup(
         name             = "python_sentinel",
-        version          = "2017.02.20.1858",
+        version          = "2017.03.15.2320",
         description      = "motion detection and alerts",
         long_description = long_description(),
         url              = "https://github.com/wdbm/sentinel",
@@ -20,7 +20,6 @@ def main():
                            "sentinel"
                            ],
         install_requires = [
-                           "opencv",
                            "docopt",
                            "propyte",
                            "shijian",
