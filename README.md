@@ -1,6 +1,6 @@
 # sentinel
 
-This program is a security monitoring program that uses video to detect motion, that records motion video and attempts to communicate alerts if an e-mail address is specified.
+This program is a security monitoring program that uses video to detect motion, that records motion video, can express speech alerts, can express alarms and attempts to communicate alerts as configured.
 
 ![](https://raw.githubusercontent.com/wdbm/sentinel/master/media/motion_detection.gif)
 
