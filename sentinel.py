@@ -78,7 +78,7 @@ import shijian
 import tonescale
 
 name     = "sentinel"
-version  = "2017-03-15T2320Z"
+version  = "2017-03-20T2155Z"
 logo     = None
 instance = str(uuid.uuid4())
 
@@ -197,6 +197,7 @@ class motion_detector():
         self.video_saver                = None
         self.font                       = None
         self.frame                      = None
+        self.sent_image_recently        = False
 
         self.capture = cv.CaptureFromCAM(0)
         self.frame   = cv.QueryFrame(self.capture)
@@ -279,6 +280,7 @@ class motion_detector():
                 not self.recording and\
                 self.day_run_time is None or\
                 shijian.in_daily_time_range(time_range = self.day_run_time):
+                self.sent_image_recently = False
                 # If motion is detected, depending on configuration,
                 # send an alert, start recording and speak an alert.
                 if self.movement():
@@ -342,6 +344,18 @@ class motion_detector():
                         self.font,                            # font object
                         0                                     # font scale
                     )
+                    if not self.sent_image_recently:
+                        # Save and, if specified, send an image.
+                        filename_image = shijian.filename_time_UTC(
+                            extension = ".png"
+                        )
+                        cv.SaveImage(filename_image, frame_current)
+                        if program.use_Telegram:
+                            propyte.send_message_Telegram(
+                                recipients = program.recipients_Telegram,
+                                filepath   = filename_image
+                            )
+                        self.sent_image_recently = True
                     cv.WriteFrame(
                         self.video_saver,
                         frame_current
