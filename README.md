@@ -26,3 +26,17 @@ Install and set up [propyte](https://github.com/wdbm/propyte) and its dependenci
 ```Bash
 ./sentinel.py --email="mulder@fbi.g0v"
 ```
+
+Sentinel interacts with a lot of infrastructure. It could be sensible to run sentinel in a loop such that it is restarted in case of crashes.
+
+```Bash
+while true; do
+    ./sentinel.py                       \
+        --telegram=true                 \
+        --speak=false                   \
+        --alarm=false                   \
+        --launchdelay=200               \
+        --recipientstelegram=@mulderfbi
+    sleep 1200
+done
+```
