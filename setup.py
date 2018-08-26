@@ -7,7 +7,7 @@ import setuptools
 def main():
     setuptools.setup(
         name             = "sentinel",
-        version          = "2018.08.26.2257",
+        version          = "2018.08.26.2301",
         description      = "motion detection and alerts",
         long_description = long_description(),
         url              = "https://github.com/wdbm/sentinel",

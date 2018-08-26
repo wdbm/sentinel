@@ -78,7 +78,7 @@ import technicolor
 import tonescale
 
 name         = "sentinel"
-__version__  = "2018-08-26T2257Z"
+__version__  = "2018-08-26T2301Z"
 
 global log
 global options
@@ -320,7 +320,6 @@ class motion_detector(object):
             255,                  # maximum value of threshold types
             cv.CV_THRESH_BINARY   # threshold type
         )
-
         cv.Dilate(
             self.frame_grayscale, # input array
             self.frame_grayscale, # output array
