@@ -74,7 +74,7 @@ import technicolor
 import tonescale
 
 name         = "sentinel"
-__version__  = "2018-08-26T2209Z"
+__version__  = "2018-08-26T2220Z"
 
 global options
 log = logging.getLogger(name)
