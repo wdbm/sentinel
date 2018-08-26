@@ -18,5 +18,5 @@ Set up scalar, as described [here](https://github.com/wdbm/scalar).
 # usage
 
 ```Bash
-./sentinel.py --help
+sentinel --help
 ```
