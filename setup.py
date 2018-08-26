@@ -9,7 +9,7 @@ def main():
 
     setuptools.setup(
         name             = "python_sentinel",
-        version          = "2017.03.20.2155",
+        version          = "2018.08.26.2209",
         description      = "motion detection and alerts",
         long_description = long_description(),
         url              = "https://github.com/wdbm/sentinel",
@@ -22,16 +22,19 @@ def main():
         install_requires = [
                            "docopt",
                            "propyte",
+                           "pyprel",
+                           "scalar",
                            "shijian",
+                           "technicolor",
                            "tonescale"
                            ],
         scripts          = [
                            "sentinel.py"
                            ],
         entry_points     = """
-            [console_scripts]
-            sentinel = sentinel:sentinel
-        """
+                           [console_scripts]
+                           sentinel = sentinel:sentinel
+                           """
     )
 
 def long_description(
