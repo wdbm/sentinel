@@ -7,7 +7,7 @@ import setuptools
 def main():
     setuptools.setup(
         name             = "sentinel",
-        version          = "2018.08.26.2220",
+        version          = "2018.08.26.2257",
         description      = "motion detection and alerts",
         long_description = long_description(),
         url              = "https://github.com/wdbm/sentinel",
@@ -17,6 +17,7 @@ def main():
         packages         = setuptools.find_packages(),
         install_requires = [
                            "docopt",
+                           "pathlib2",
                            "propyte",
                            "pyprel",
                            "scalar",

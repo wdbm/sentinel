@@ -44,6 +44,7 @@ options:
     --detection_threshold=INT          detection threshold         [default: 4]
     --record_on_motion_detection=BOOL  record on motion detection  [default: true]
     --display_windows=BOOL             display windows             [default: true]
+    --record_directory=TEXT            record directory            [default: ./record]
 
     --speak=BOOL                       speak on motion detection   [default: false]
     --alarm=BOOL                       alarm on motion detection   [default: false]
@@ -54,13 +55,16 @@ options:
     --day_run_time=TEXT                HHMM--HHMM                  [default: none]
 """
 
+import sys
 import datetime
 import docopt
 import logging
 import os
+if sys.version_info[0] <= 2:
+    from pathlib2 import Path
+else:
+   from pathlib import Path
 import signal
-import smtplib
-import sys
 import threading
 import time
 import uuid
@@ -74,14 +78,16 @@ import technicolor
 import tonescale
 
 name         = "sentinel"
-__version__  = "2018-08-26T2220Z"
+__version__  = "2018-08-26T2257Z"
 
+global log
 global options
-log = logging.getLogger(name)
-log.addHandler(technicolor.ColorisingStreamHandler())
-log.setLevel(logging.INFO)
 
 def main():
+    global log
+    log = logging.getLogger(name)
+    log.addHandler(technicolor.ColorisingStreamHandler())
+    log.setLevel(logging.INFO)
     global options
     options = docopt.docopt(__doc__, version = __version__)
 
@@ -89,6 +95,7 @@ def main():
     detection_threshold        =     int(options["--detection_threshold"])
     record_on_motion_detection =         options["--record_on_motion_detection"].lower() == "true"
     display_windows            =         options["--display_windows"].lower() == "true"
+    record_directory           =         options["--record_directory"]
 
     speak                      =         options["--speak"].lower() == "true"
     alarm                      =         options["--alarm"].lower() == "true"
@@ -111,6 +118,7 @@ def main():
         FPS                        = FPS,
         record_on_motion_detection = record_on_motion_detection,
         display_windows            = display_windows,
+        record_directory           = record_directory,
         speak                      = speak,
         alarm                      = alarm,
         message                    = message,
@@ -134,6 +142,7 @@ class motion_detector(object):
         FPS                        = 30,
         record_on_motion_detection = True,
         display_windows            = True,
+        record_directory           = "./record",
         speak                      = True,
         alarm                      = True,
         message                    = True,
@@ -145,6 +154,7 @@ class motion_detector(object):
         self.FPS                        = FPS
         self.record_on_motion_detection = record_on_motion_detection
         self.display_windows            = display_windows
+        self.record_directory           = Path(record_directory).expanduser()
         self.speak                      = speak
         self.alarm                      = alarm
         self.message                    = message
@@ -156,6 +166,10 @@ class motion_detector(object):
 
         self.capture = cv.CaptureFromCAM(0)
         self.frame   = cv.QueryFrame(self.capture)
+
+        if not self.record_directory.exists():
+            log.info("make directory {directory}".format(directory = self.record_directory))
+            self.record_directory.mkdir(parents = True)
 
         if record_on_motion_detection: self.recorder()
         self.frame_grayscale = cv.CreateImage(
@@ -188,11 +202,11 @@ class motion_detector(object):
     def recorder(
         self
         ):
-        filename = shijian.filename_time_UTC(extension = ".avi")
+        filepath = str(self.record_directory) + "/" + shijian.filename_time_UTC(extension = ".avi")
         codec = cv.CV_FOURCC("D", "I", "V", "X") # MPEG-4 4-character codec code
-        log.info("record to {filename}\n".format(filename = filename))
+        log.info("record to {filepath}\n".format(filepath = filepath))
         self.video_saver = cv.CreateVideoWriter(
-            filename,               # filename
+            filepath,               # filepath
             codec,                  # codec
             self.FPS,               # FPS
             cv.GetSize(self.frame), # size
@@ -255,8 +269,8 @@ class motion_detector(object):
                     if not self.sent_image_recently:
                         # Save and, if specified, send an image.
                         filename_image = shijian.filename_time_UTC(extension = ".png")
-                        cv.SaveImage(filename_image, frame_current)
-                        if self.message: scalar.send_image(filename_image)
+                        cv.SaveImage(str(self.record_directory) + "/" + filename_image, frame_current)
+                        if self.message: scalar.send_image(str(self.record_directory) + "/" + filename_image)
                         self.sent_image_recently = True
                     cv.WriteFrame(self.video_saver, frame_current)
             if self.display_windows:
