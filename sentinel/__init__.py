@@ -78,17 +78,16 @@ import technicolor
 import tonescale
 
 name         = "sentinel"
-__version__  = "2018-08-26T2301Z"
+__version__  = "2018-08-27T1547Z"
 
 global log
-global options
 
 def main():
+
     global log
     log = logging.getLogger(name)
     log.addHandler(technicolor.ColorisingStreamHandler())
     log.setLevel(logging.INFO)
-    global options
     options = docopt.docopt(__doc__, version = __version__)
 
     FPS                        =     int(options["--fps"])
@@ -96,11 +95,9 @@ def main():
     record_on_motion_detection =         options["--record_on_motion_detection"].lower() == "true"
     display_windows            =         options["--display_windows"].lower() == "true"
     record_directory           =         options["--record_directory"]
-
     speak                      =         options["--speak"].lower() == "true"
     alarm                      =         options["--alarm"].lower() == "true"
     message                    =         options["--message"].lower() == "true"
-
     delay_launch               =     int(options["--launch_delay"])
     duration_record            =     int(options["--record_duration"])
     day_run_time               = None if options["--day_run_time"].lower() == "none" else options["--day_run_time"]
@@ -170,7 +167,6 @@ class motion_detector(object):
         if not self.record_directory.exists():
             log.info("make directory {directory}".format(directory = self.record_directory))
             self.record_directory.mkdir(parents = True)
-
         if record_on_motion_detection: self.recorder()
         self.frame_grayscale = cv.CreateImage(
             cv.GetSize(self.frame), # size
