@@ -78,12 +78,11 @@ import technicolor
 import tonescale
 
 name         = "sentinel"
-__version__  = "2018-08-27T1547Z"
+__version__  = "2018-08-28T1235Z"
 
 global log
 
 def main():
-
     global log
     log = logging.getLogger(name)
     log.addHandler(technicolor.ColorisingStreamHandler())
@@ -159,7 +158,7 @@ class motion_detector(object):
         self.video_saver                = None
         self.font                       = None
         self.frame                      = None
-        self.sent_image_recently        = False
+        self.last_image_send_time       = datetime.datetime.utcnow() - datetime.timedelta(days = 1)
 
         self.capture = cv.CaptureFromCAM(0)
         self.frame   = cv.QueryFrame(self.capture)
@@ -226,7 +225,6 @@ class motion_detector(object):
             time_current  = datetime.datetime.utcnow()
             self.process_image(frame_current)
             if not self.recording and self.day_run_time is None or shijian.in_daily_time_range(time_range = self.day_run_time):
-                self.sent_image_recently = False
                 # If motion is detected, depending on configuration, send an alert, start recording and speak an alert.
                 if self.movement():
                     self.trigger_time = time_current
@@ -262,12 +260,12 @@ class motion_detector(object):
                         self.font,                                           # font object
                         0                                                    # font scale
                     )
-                    if not self.sent_image_recently:
+                    if (datetime.datetime.utcnow() - self.last_image_send_time).total_seconds() >= 60:
                         # Save and, if specified, send an image.
                         filename_image = shijian.filename_time_UTC(extension = ".png")
                         cv.SaveImage(str(self.record_directory) + "/" + filename_image, frame_current)
                         if self.message: scalar.send_image(str(self.record_directory) + "/" + filename_image)
-                        self.sent_image_recently = True
+                        self.last_image_send_time = datetime.datetime.utcnow()
                     cv.WriteFrame(self.video_saver, frame_current)
             if self.display_windows:
                 cv.ShowImage(name, frame_current)
