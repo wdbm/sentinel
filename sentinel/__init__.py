@@ -40,19 +40,20 @@ options:
     -h, --help                         display help message
     --version                          display version and exit
 
-    --fps=INT                          camera frames per second    [default: 30]
-    --detection_threshold=INT          detection threshold         [default: 4]
-    --record_on_motion_detection=BOOL  record on motion detection  [default: true]
-    --display_windows=BOOL             display windows             [default: true]
-    --record_directory=TEXT            record directory            [default: ./record]
+    --fps=INT                          camera frames per second            [default: 30]
+    --detection_threshold=INT          detection threshold                 [default: 4]
+    --record_on_motion_detection=BOOL  record on motion detection          [default: true]
+    --display_windows=BOOL             display windows                     [default: true]
+    --record_directory=TEXT            record directory                    [default: ./record]
+                                                                           
+    --speak=BOOL                       speak on motion detection           [default: false]
+    --alarm=BOOL                       alarm on motion detection           [default: false]
+    --message=BOOL                     alert via message                   [default: true]
+    --instance=BOOL                    add instance identifier to messages [default: true]
 
-    --speak=BOOL                       speak on motion detection   [default: false]
-    --alarm=BOOL                       alarm on motion detection   [default: false]
-    --message=BOOL                     alert via message           [default: true]
-
-    --launch_delay=INT                 delay (s) before run        [default: 5]
-    --record_duration=INT              record time (s)             [default: 20]
-    --day_run_time=TEXT                HHMM--HHMM                  [default: none]
+    --launch_delay=INT                 delay (s) before run                [default: 5]
+    --record_duration=INT              record time (s)                     [default: 20]
+    --day_run_time=TEXT                HHMM--HHMM                          [default: none]
 """
 
 import sys
@@ -64,6 +65,7 @@ if sys.version_info[0] <= 2:
     from pathlib2 import Path
 else:
    from pathlib import Path
+import platform
 import signal
 import threading
 import time
@@ -78,7 +80,7 @@ import technicolor
 import tonescale
 
 name         = "sentinel"
-__version__  = "2018-08-28T1235Z"
+__version__  = "2018-08-29T1300Z"
 
 global log
 
@@ -97,16 +99,22 @@ def main():
     speak                      =         options["--speak"].lower() == "true"
     alarm                      =         options["--alarm"].lower() == "true"
     message                    =         options["--message"].lower() == "true"
+    instance                   =         options["--instance"].lower() == "true"
     delay_launch               =     int(options["--launch_delay"])
     duration_record            =     int(options["--record_duration"])
     day_run_time               = None if options["--day_run_time"].lower() == "none" else options["--day_run_time"]
+
+    if instance:
+        ID = "{node}_{UUID4}: ".format(node = platform.node(), UUID4 = str(uuid.uuid4())[:8])
+    else:
+        ID = ""
 
     pyprel.print_line()
     log.info(pyprel.center_string(text = pyprel.render_banner(text = name.upper())))
     pyprel.print_line()
     log.info(name + " " + __version__)
-    if message: scalar.alert(message = "{name} monitoring and alerting started".format(name = name))
-    log.info("\nlaunch motion detection in {time} s\n\nPress Escape to exit.\n".format(time = delay_launch))
+    if message: scalar.alert(message = "{ID}{name} monitoring and alerting started".format(ID = ID, name = name))
+    log.info("\nlaunch motion detection in {time} s\n".format(time = delay_launch))
     detect = motion_detector(
         delay_launch               = delay_launch,
         duration_record            = duration_record,
@@ -118,6 +126,7 @@ def main():
         speak                      = speak,
         alarm                      = alarm,
         message                    = message,
+        ID                         = ID,
         day_run_time               = day_run_time
     )
     detect.run()
@@ -142,6 +151,7 @@ class motion_detector(object):
         speak                      = True,
         alarm                      = True,
         message                    = True,
+        ID                         = "",
         day_run_time               = None
         ):
         self.delay_launch               = delay_launch
@@ -154,6 +164,7 @@ class motion_detector(object):
         self.speak                      = speak
         self.alarm                      = alarm
         self.message                    = message
+        self.ID                         = ID
         self.day_run_time               = day_run_time
         self.video_saver                = None
         self.font                       = None
@@ -230,7 +241,7 @@ class motion_detector(object):
                     self.trigger_time = time_current
                     if time_current > time_start + datetime.timedelta(seconds = self.delay_launch):
                         log.info("{timestamp} motion detected".format(timestamp = shijian.time_UTC(style = "YYYY-MM-DD HH:MM:SS UTC")))
-                        if self.message: scalar.alert(message = "motion detected at {timestamp}".format(timestamp = self.trigger_time))
+                        if self.message: scalar.alert(message = "{ID}motion detected at {timestamp}".format(ID = self.ID, timestamp = self.trigger_time))
                         if self.speak: propyte.say(text = "motion detected")
                         if self.alarm:
                             thread_play_alarm = threading.Thread(target = self.play_alarm)
