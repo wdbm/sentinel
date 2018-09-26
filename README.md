@@ -6,17 +6,24 @@ This program is a security monitoring program that uses video to detect motion, 
 
 # setup (Ubuntu 16.04)
 
-Install OpenCV 2.4.9.1.
+Python 2 is assumed.
+
+Install OpenCV 2.4.9.1 (`python-opencv=2.4.9.1+dfsg-1.5ubuntu1`, `libopencv-dev=2.4.9.1+dfsg-1.5ubuntu1`).
 
 ```Bash
-sudo apt install python-opencv=2.4.9.1+dfsg-1.5ubuntu1
-sudo apt install libopencv-dev=2.4.9.1+dfsg-1.5ubuntu1
+sudo apt install  \
+    python-dev    \
+    libasound-dev \
+    python-pyaudio\
+    libopencv-dev \
+    python-opencv \
+    python-tk
 ```
 
 Install sentinel.
 
 ```Bash
-sudo pip2 install python_sentinel
+sudo pip install python_sentinel
 ```
 
 Manually create an account on a Matrix homeserver. Add the credentials to the scalar configuration file, as described [here](https://github.com/wdbm/scalar).
@@ -25,6 +32,10 @@ Manually create an account on a Matrix homeserver. Add the credentials to the sc
 
 ```Bash
 sentinel --help
+```
+
+```Bash
+sentinel --display_windows=false --launch_delay=120 --record_duration=15 --message=true
 ```
 
 # future

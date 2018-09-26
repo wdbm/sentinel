@@ -49,7 +49,9 @@ options:
     --speak=BOOL                       speak on motion detection           [default: false]
     --alarm=BOOL                       alarm on motion detection           [default: false]
     --message=BOOL                     alert via message                   [default: true]
-    --instance=BOOL                    add instance identifier to messages [default: true]
+    --instance=BOOL                    add instance identifier to messages
+                                       consisting of the node name plus
+                                       the first 8 characters of a UUID4   [default: true]
 
     --launch_delay=INT                 delay (s) before run                [default: 5]
     --record_duration=INT              record time (s)                     [default: 20]
@@ -114,6 +116,7 @@ def main():
     pyprel.print_line()
     log.info(name + " " + __version__)
     if message: scalar.alert(message = "{ID}{name} monitoring and alerting started".format(ID = ID, name = name))
+    log.info("\n^c to stop\n")
     log.info("\nlaunch motion detection in {time} s\n".format(time = delay_launch))
     detect = motion_detector(
         delay_launch               = delay_launch,
@@ -141,7 +144,7 @@ class motion_detector(object):
     
     def __init__(
         self,
-        delay_launch               = 3,
+        delay_launch               = 5,
         duration_record            = 20,
         detection_threshold        = 2,
         FPS                        = 30,
