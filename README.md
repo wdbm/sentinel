@@ -38,6 +38,19 @@ sentinel --help
 sentinel --display_windows=false --launch_delay=120 --record_duration=15 --message=true
 ```
 
+In case of connections problems or other problems that might cause a crash, It may be sensible to have `sentinel` restart in the case of a crash. This could be done in a way like the following, perhaps with the function described added to `.bashrc`:
+
+```Bash
+run_sentinel(){
+    while true; do
+        sentinel --display_windows=false --launch_delay=120 --record_duration=15 --message=true
+        sleep 5
+    done
+}
+
+run_sentinel
+```
+
 # future
 
 Migration from OpenCV 2 to OpenCV 3 or 4 is under consideration (which would result in compatibility with Ubuntu 18.04).
