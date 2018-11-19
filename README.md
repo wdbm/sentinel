@@ -12,11 +12,11 @@ Install OpenCV 2.4.9.1 (`python-opencv=2.4.9.1+dfsg-1.5ubuntu1`, `libopencv-dev=
 
 ```Bash
 sudo apt install  \
-    python-dev    \
     libasound-dev \
-    python-pyaudio\
     libopencv-dev \
+    python-dev    \
     python-opencv \
+    python-pyaudio\
     python-tk
 ```
 
