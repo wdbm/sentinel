@@ -54,3 +54,12 @@ run_sentinel
 # future
 
 Migration from OpenCV 2 to OpenCV 3 or 4 is under consideration (which would result in compatibility with Ubuntu 18.04).
+
+There are some issues with Ubuntu 16.04.5 LTS.
+
+```Bash
+sudo apt install     \
+    python3.6-dev    \
+    python3-distutils\
+    portaudio19-dev
+```
