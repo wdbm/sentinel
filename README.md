@@ -11,12 +11,13 @@ Python 2 is assumed.
 Install OpenCV 2.4.9.1 (`python-opencv=2.4.9.1+dfsg-1.5ubuntu1`, `libopencv-dev=2.4.9.1+dfsg-1.5ubuntu1`).
 
 ```Bash
-sudo apt install  \
-    libasound-dev \
-    libopencv-dev \
-    python-dev    \
-    python-opencv \
-    python-pyaudio\
+sudo apt install        \
+    libasound-dev       \
+    libopencv-legacy-dev\
+    python-dev          \
+    python-opencv       \
+    python-pyaudio      \
+    portaudio19-dev     \
     python-tk
 ```
 
@@ -55,11 +56,17 @@ run_sentinel
 
 Migration from OpenCV 2 to OpenCV 3 or 4 is under consideration (which would result in compatibility with Ubuntu 18.04).
 
-There are some issues with Ubuntu 16.04.5 LTS.
+There are some issues with Ubuntu 16.04.5 LTS. Some possible procedures to advance to a working setup are as follows.
 
 ```Bash
 sudo apt install     \
     python3.6-dev    \
     python3-distutils\
     portaudio19-dev
+```
+
+```Bash
+sudo apt install                         \
+    libopencv-legacy-dev                 \
+    python-opencv=2.4.9.1+dfsg-1.5ubuntu1\
 ```
