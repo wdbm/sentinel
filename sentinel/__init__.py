@@ -82,7 +82,7 @@ import technicolor
 import tonescale
 
 name         = "sentinel"
-__version__  = "2018-11-26T1141Z"
+__version__  = "2018-12-06T0117Z"
 
 global log
 

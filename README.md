@@ -4,21 +4,101 @@ This program is a security monitoring program that uses video to detect motion, 
 
 ![](https://raw.githubusercontent.com/wdbm/sentinel/master/media/motion_detection.gif)
 
-# setup (Ubuntu 16.04)
+# setup (Ubuntu 16.04 LTS)
 
-Python 2 is assumed.
+Python 2 and OpenCV 2 are required. Specifically, this program has been tested with OpenCV 2.4.9.1 and 2.4.13.5.
 
-Install OpenCV 2.4.9.1 (`python-opencv=2.4.9.1+dfsg-1.5ubuntu1`, `libopencv-dev=2.4.9.1+dfsg-1.5ubuntu1`).
+Install dependencies.
 
 ```Bash
-sudo apt install        \
-    libasound-dev       \
-    libopencv-legacy-dev\
-    python-dev          \
-    python-opencv       \
-    python-pyaudio      \
-    portaudio19-dev     \
+sudo apt update
+sudo apt install   \
+    libasound-dev  \
+    python-dev     \
+    python-pyaudio \
+    portaudio19-dev\
     python-tk
+```
+
+Install OpenCV 2 using the following procedure, which was defined [here](https://gist.github.com/arthurbeggs/06df46af94af7f261513934e56103b30).
+
+```Bash
+sudo apt install                     \
+    build-essential                  \
+    cmake                            \
+    libgtk2.0-dev                    \
+    pkg-config                       \
+    python-dev                       \
+    checkinstall                     \
+    libavcodec-dev                   \
+    libavcodec-dev                   \
+    libavformat-dev                  \
+    libavformat-dev                  \
+    libdc1394-22-dev                 \
+    libgstreamer0.10-dev             \
+    libgstreamer-plugins-base0.10-dev\
+    libgtk2.0-dev                    \
+    libjasper-dev                    \
+    libjasper-dev                    \
+    libjpeg-dev                      \
+    libjpeg-dev                      \
+    libmp3lame-dev                   \
+    libopencore-amrnb-dev            \
+    libopencore-amrwb-dev            \
+    libopencv-dev                    \
+    libpng12-dev                     \
+    libqt4-dev                       \
+    libswscale-dev                   \
+    libswscale-dev                   \
+    libtbb-dev                       \
+    libtheora-dev                    \
+    libtiff5-dev                     \
+    libv4l-dev                       \
+    libvorbis-dev                    \
+    libxine2                         \
+    libxvidcore-dev                  \
+    python-dev                       \
+    python-numpy                     \
+    v4l-utils                        \
+    x264                             \
+    yasm
+```
+
+```Bash
+wget https://github.com/opencv/opencv/archive/2.4.13.5.zip -O opencv-2.4.13.5.zip
+unzip opencv-2.4.13.5.zip
+cd opencv-2.4.13.5
+mkdir release
+cd release
+cmake                                \
+    -G "Unix Makefiles"              \
+    -DCMAKE_CXX_COMPILER=/usr/bin/g++\
+    CMAKE_C_COMPILER=/usr/bin/gcc    \
+    -DCMAKE_BUILD_TYPE=RELEASE       \
+    -DCMAKE_INSTALL_PREFIX=/usr/local\
+    -DWITH_TBB=ON                    \
+    -DBUILD_NEW_PYTHON_SUPPORT=ON    \
+    -DWITH_V4L=ON                    \
+    -DINSTALL_C_EXAMPLES=ON          \
+    -DINSTALL_PYTHON_EXAMPLES=ON     \
+    -DBUILD_EXAMPLES=ON              \
+    -DWITH_QT=ON                     \
+    -DWITH_OPENGL=ON                 \
+    -DBUILD_FAT_JAVA_LIB=ON          \
+    -DINSTALL_TO_MANGLED_PATHS=ON    \
+    -DINSTALL_CREATE_DISTRIB=ON      \
+    -DINSTALL_TESTS=ON               \
+    -DENABLE_FAST_MATH=ON            \
+    -DWITH_IMAGEIO=ON                \
+    -DBUILD_SHARED_LIBS=OFF          \
+    -DWITH_GSTREAMER=ON ..
+make all -j"$(nproc)"
+sudo make install
+cd ../../
+rm -rf ./opencv-2.4.13.5
+sudo apt install python-opencv
+echo -e "OpenCV version:"
+pkg-config --modversion opencv
 ```
 
 Install sentinel.
@@ -54,19 +134,4 @@ run_sentinel
 
 # future
 
-Migration from OpenCV 2 to OpenCV 3 or 4 is under consideration (which would result in compatibility with Ubuntu 18.04).
-
-There are some issues with Ubuntu 16.04.5 LTS. Some possible procedures to advance to a working setup are as follows.
-
-```Bash
-sudo apt install     \
-    python3.6-dev    \
-    python3-distutils\
-    portaudio19-dev
-```
-
-```Bash
-sudo apt install                         \
-    libopencv-legacy-dev                 \
-    python-opencv=2.4.9.1+dfsg-1.5ubuntu1\
-```
+Migration from OpenCV 2 to OpenCV 3 or 4 is under consideration.
