@@ -119,10 +119,11 @@ sentinel --help
 sentinel --display_windows=false --launch_delay=120 --record_duration=15 --message=true
 ```
 
-In case of connections problems or other problems that might cause a crash, It may be sensible to have `sentinel` restart in the case of a crash. This could be done in a way like the following, perhaps with the function described added to `.bashrc`:
+In case of connections problems or other problems that might cause a crash, It may be sensible to have `sentinel` restart in the case of a crash. This could be done in a way like the following, perhaps with the function described added to `.bashrc`, and perhaps saving to Nextcloud for remote recording (in additional to the remote recording via messaging):
 
 ```Bash
 run_sentinel(){
+    #cd ~/Nextcloud
     while true; do
         sentinel --display_windows=false --launch_delay=120 --record_duration=15 --message=true
         sleep 5
