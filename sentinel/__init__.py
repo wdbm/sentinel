@@ -82,7 +82,7 @@ import technicolor
 import tonescale
 
 name         = "sentinel"
-__version__  = "2018-12-06T0117Z"
+__version__  = "2018-12-16T1608Z"
 
 global log
 
@@ -115,7 +115,11 @@ def main():
     log.info(pyprel.center_string(text = pyprel.render_banner(text = name.upper())))
     pyprel.print_line()
     log.info(name + " " + __version__)
-    if message: scalar.alert(message = "{ID}{name} monitoring and alerting started".format(ID = ID, name = name))
+    if message:
+        try:
+            scalar.alert(message = "{ID}{name} monitoring and alerting started".format(ID = ID, name = name))
+        except:
+            log.error("error sending message")
     log.info("\n^c to stop\n")
     log.info("\nlaunch motion detection in {time} s\n".format(time = delay_launch))
     detect = motion_detector(
@@ -244,7 +248,11 @@ class motion_detector(object):
                     self.trigger_time = time_current
                     if time_current > time_start + datetime.timedelta(seconds = self.delay_launch):
                         log.info("{timestamp} motion detected".format(timestamp = shijian.time_UTC(style = "YYYY-MM-DD HH:MM:SS UTC")))
-                        if self.message: scalar.alert(message = "{ID}motion detected at {timestamp}".format(ID = self.ID, timestamp = self.trigger_time))
+                        if self.message:
+                            try:
+                                scalar.alert(message = "{ID}motion detected at {timestamp}".format(ID = self.ID, timestamp = self.trigger_time))
+                            except:
+                                log.error("error sending message")
                         if self.speak: propyte.say(text = "motion detected")
                         if self.alarm:
                             thread_play_alarm = threading.Thread(target = self.play_alarm)
@@ -278,7 +286,11 @@ class motion_detector(object):
                         # Save and, if specified, send an image.
                         filename_image = shijian.filename_time_UTC(extension = ".png")
                         cv.SaveImage(str(self.record_directory) + "/" + filename_image, frame_current)
-                        if self.message: scalar.send_image(str(self.record_directory) + "/" + filename_image)
+                        if self.message:
+                            try:
+                                scalar.send_image(str(self.record_directory) + "/" + filename_image)
+                            except:
+                                log.error("error sending message")
                         self.last_image_send_time = datetime.datetime.utcnow()
                     cv.WriteFrame(self.video_saver, frame_current)
             if self.display_windows:
