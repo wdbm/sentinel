@@ -124,6 +124,8 @@ In case of connections problems or other problems that might cause a crash, It m
 ```Bash
 run_sentinel(){
     #cd ~/Nextcloud
+    #mkdir sentinel
+    #cd sentinel
     while true; do
         sentinel --display_windows=false --launch_delay=120 --record_duration=15 --message=true
         sleep 5

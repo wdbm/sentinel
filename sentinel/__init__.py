@@ -62,6 +62,7 @@ import sys
 import datetime
 import docopt
 import logging
+import multiprocessing
 import os
 if sys.version_info[0] <= 2:
     from pathlib2 import Path
@@ -82,7 +83,7 @@ import technicolor
 import tonescale
 
 name         = "sentinel"
-__version__  = "2018-12-16T1608Z"
+__version__  = "2019-05-27T1021Z"
 
 global log
 
@@ -115,6 +116,12 @@ def main():
     log.info(pyprel.center_string(text = pyprel.render_banner(text = name.upper())))
     pyprel.print_line()
     log.info(name + " " + __version__)
+
+    global clock_restart
+    clock_restart   = shijian.Clock(name="restart")
+    restart_control = multiprocessing.Process(target=restart_if_beyond_interval)
+    restart_control.start()
+
     if message:
         try:
             scalar.alert(message = "{ID}{name} monitoring and alerting started".format(ID = ID, name = name))
@@ -137,6 +144,15 @@ def main():
         day_run_time               = day_run_time
     )
     detect.run()
+
+def restart_from_suspend():
+    while True:
+        time.sleep(5)
+        if clock_restart.time() >= 300:
+            log.error("restart from suspend")
+            os.execv(__file__, sys.argv)
+        clock_restart.reset()
+        clock_restart.start()
 
 class motion_detector(object):
     
