@@ -83,7 +83,7 @@ import technicolor
 import tonescale
 
 name         = "sentinel"
-__version__  = "2019-05-27T1021Z"
+__version__  = "2019-05-28T1348Z"
 
 global log
 
@@ -119,7 +119,7 @@ def main():
 
     global clock_restart
     clock_restart   = shijian.Clock(name="restart")
-    restart_control = multiprocessing.Process(target=restart_if_beyond_interval)
+    restart_control = multiprocessing.Process(target=restart_from_suspend)
     restart_control.start()
 
     if message:
